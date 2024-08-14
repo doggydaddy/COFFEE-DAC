@@ -1,0 +1,40 @@
+#!/usr/bin/Rscript
+
+input_dumps <- list.files(path="intermediates/", pattern='dump', full.names=T)
+N <- length(input_dumps)
+for (i in 1:N) {
+
+    a_dump<-read.table(input_dumps[i])
+    a_dump_index <- as.numeric( strsplit(strsplit(input_dumps[i],"_")[[1]][1], "chop")[[1]][2] )
+
+    a_ijk <- as.numeric(a_dump[a_dump_index, 1:3])
+    a_xyz <- as.numeric(a_dump[a_dump_index, 4:6])
+    
+    a_ot_ijk <- a_dump[a_dump$V7>0, ]     
+    a_ot_ijk[,4] <- a_ot_ijk[, 1]
+    a_ot_ijk[,5] <- a_ot_ijk[, 2]
+    a_ot_ijk[,6] <- a_ot_ijk[, 3]
+    a_ot_xyz <- a_ot_ijk
+
+    N_ot <- dim(a_ot_ijk)[1]
+
+    a_ot_ijk[,1] <- rep(a_ijk[1], N_ot)
+    a_ot_ijk[,2] <- rep(a_ijk[2], N_ot)
+    a_ot_ijk[,3] <- rep(a_ijk[3], N_ot)
+
+    a_ot_xyz[,1] <- rep(a_xyz[1], N_ot)
+    a_ot_xyz[,2] <- rep(a_xyz[2], N_ot)
+    a_ot_xyz[,3] <- rep(a_xyz[3], N_ot)
+
+    colnames(a_ot_ijk) <- c("a_i", "a_j", "a_k", "b_i", "b_j", "b_k", "val")
+    colnames(a_ot_xyz) <- c("a_x", "a_y", "a_z", "b_x", "b_y", "b_z", "val")
+    if ( i == 1 ) {
+        output_table_ijk <- a_ot_ijk
+        output_table_xyz <- a_ot_xyz
+    } else {
+        output_table_ijk <- rbind(output_table_ijk, a_ot_ijk)
+        output_table_xyz <- rbind(output_table_xyz, a_ot_xyz)
+    }
+}
+write.csv(output_table_ijk, file='edges_to_plot_ijk.csv', row.names=F)
+write.csv(output_table_xyz, file='edges_to_plot_xyz.csv', row.names=F)
